@@ -11,7 +11,7 @@ def main():
     i1 = InvoiceItem(aaa, 1)
     i2 = InvoiceItem(bbb, 2)
     
-    # Llamada con demasiados parámetros y tipos inconsistentes
+    # Llamada con demasiados parámetros y tipos inconsistentes c
     res = s.process_everything("Juan", "Calle 1", "j@m.com", [i1, i2], "PROMO10", "USD", None, False)
     
     print(f"Resultado: {res}")
@@ -22,3 +22,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
