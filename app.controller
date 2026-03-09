@@ -1,0 +1,31 @@
+from data_class import CustomerData
+from billing_service import BillingService
+
+class InvoiceController:
+    def __init__(self):
+        self.service = BillingService()
+        self.customer = CustomerData()
+
+    def run_process(self):
+        # El controlador orquesta todo, pero interactúa demasiado 
+        # con los detalles internos de las otras clases.
+        self.customer.full_name = "Juan Perez"
+        self.customer.email_address = "juan@example.com"
+        
+        # El controlador decide la lógica de negocio que debería estar en el modelo
+        if self.service.validate_email_format(self.customer.email_address):
+            self.service.add_item("Laptop", 1000, 1, "ELECTRONICS")
+            self.service.add_item("Apple", 2, 5, "FOOD")
+            
+            total = self.service.calculate_total_with_complex_tax_logic()
+            self.customer.total_spent = total
+            
+            report = self.service.generate_html_report(self.customer.full_name)
+            self.service.save_to_database_simulation()
+            return f"Proceso terminado para {self.customer.full_name}: {total}"
+        
+        return "Error en el cliente"
+
+if __name__ == "__main__":
+    controller = InvoiceController()
+    print(controller.run_process())
