@@ -1,65 +1,73 @@
 import datetime
+import os # Import no usado (Sonar lo detecta)
 
 class BillingSystem:
     def __init__(self):
         self.invoices = []
+        self.db_path = "C:/users/admin/documents/database.db" # Hardcoded Path
 
-    # Smell: Long Parameter List & High Complexity
-    def create_invoice(self, c_name, c_address, c_email, items, discount_code):
-        total = 0
-        for item in items:
-            # Smell: Feature Envy & Switch Statements (if/elif)
-            # La lógica de impuestos debería estar en Product, no aquí.
-            if item.product.product_type == 0:
-                total += (item.product.price * 1.21) * item.quantity
-            elif item.product.product_type == 1:
-                total += (item.product.price * 1.35) * item.quantity
-            elif item.product.product_type == 2:
-                total += (item.product.price * 1.10) * item.quantity
+    def process_everything(self, client_name, address, email, items, discount, currency, tax_id, is_company):
+        # Smell: Long Parameter List (Demasiados argumentos)
         
-        # Smell: Hardcoded Values (Magic Strings/Numbers)
-        if discount_code == "PROMO10":
-            total = total * 0.9
-        elif discount_code == "SUPER50":
-            total = total * 0.5
+        total = 0
+        print("Iniciando proceso...") # Side effect innecesario
 
-        invoice_data = {
-            "customer": c_name,
-            "address": c_address,
-            "email": c_email,
-            "total": total,
-            "date": datetime.datetime.now(),
-            "items": items
+        # Smell: Deep Nesting & High Cognitive Complexity
+        if items is not None:
+            if len(items) > 0:
+                for item in items:
+                    if item.p.type == 0:
+                        tax = 1.21
+                        total += (item.p.price * tax) * item.q
+                    else:
+                        if item.p.type == 1:
+                            tax = 1.35
+                            total += (item.p.price * tax) * item.q
+                        else:
+                            if item.p.type == 2:
+                                total += (item.p.price * 1.10) * item.q
+                            else:
+                                total += item.p.price * item.q
+            else:
+                print("No hay items")
+        
+        # Smell: Magic Strings & Duplicated Logic
+        if discount == "PROMO10":
+            total = total - (total * 0.10)
+        elif discount == "SUPER50":
+            total = total - (total * 0.50)
+        elif discount == "WELCOME":
+            total = total - 5
+
+        # Smell: Empty except (Bad practice)
+        try:
+            f = open("log.txt", "a")
+            f.write("Factura creada")
+            f.close()
+        except:
+            pass 
+
+        invoice = {
+            "c": client_name,
+            "addr": address,
+            "e": email,
+            "t": total,
+            "d": datetime.datetime.now()
         }
         
-        self.invoices.append(invoice_data)
-        
-        # Smell: Violación de Single Responsibility Principle (SRP)
-        # Esta clase gestiona datos, envía correos Y escribe archivos.
-        self.send_email_notification(c_email, total)
-        self.save_to_file(invoice_data)
-        return invoice_data
+        self.invoices.append(invoice)
+        return total
 
-    def send_email_notification(self, email, amount):
-        print(f"Enviando correo a {email} por un monto de {amount}...")
+    def calculate_taxes_again(self):
+        # Smell: Duplicated Code (Casi lo mismo que arriba)
+        # Esto aumenta la deuda técnica
+        t_recaudado = 0
+        for i in self.invoices:
+            # Aquí se repite la lógica de los IF de arriba de forma manual
+            t_recaudado += i['t'] * 0.21 
+        return t_recaudado
 
-    def save_to_file(self, data):
-        with open("facturas_db.txt", "a") as f:
-            f.write(f"{data['date']}: {data['customer']} - {data['total']}\n")
-
-    def generate_report(self):
-        print("--- REPORTE DE VENTAS ---")
-        total_ventas = 0
-        impuestos_totales = 0
-        
-        for inv in self.invoices:
-            total_ventas += inv['total']
-            # Smell: Code Duplication
-            # Se repite la lógica de cálculo de impuestos que ya estaba en create_invoice
-            for item in inv['items']:
-                if item.product.product_type == 0:
-                    impuestos_totales += (item.product.price * 0.21) * item.quantity
-                elif item.product.product_type == 1:
-                    impuestos_totales += (item.product.price * 0.35) * item.quantity
-        
-        print(f"Total: {total_ventas} | Impuestos: {impuestos_totales}")
+    def send_stuff(self, m):
+        # Smell: Unused local variable
+        unused_var = "Hola"
+        print(f"Enviando... {m}")
